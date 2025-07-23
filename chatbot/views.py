@@ -1,5 +1,6 @@
 import os
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from langchain_groq import ChatGroq
@@ -43,8 +44,9 @@ def ask_ai(context, message):
     return markdown(response.content, output_format='html')
 
 
+@login_required
 def chatbot(request):
-    chats = Chat.objects.all()
+    chats = Chat.objects.filter(user=request.user)
 
     if request.method == 'POST':
         context = get_chat_history(
@@ -57,6 +59,7 @@ def chatbot(request):
         )
 
         chat = Chat(
+            user=request.user,
             message=message,
             response=response,
         )
