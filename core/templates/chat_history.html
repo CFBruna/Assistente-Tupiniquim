@@ -1,0 +1,622 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+  :root {
+    --primary-color: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --background: #fafafa;
+    --surface: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border-light: #f3f4f6;
+    --border-color: #e5e7eb;
+    --success-color: #10b981;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius: 16px;
+    --radius-lg: 20px;
+    --radius-sm: 12px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--background);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .app-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0 1rem;
+  }
+
+  .main-interface {
+    width: 100%;
+    max-width: 900px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .title-icon {
+    width: 2rem;
+    height: 2rem;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .new-chat-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .new-chat-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    color: white;
+    text-decoration: none;
+  }
+
+  .new-chat-btn:active {
+    transform: translateY(0);
+  }
+
+  .btn-icon {
+    width: 1rem;
+    height: 1rem;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+
+  .logout-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .logout-button:hover {
+    background: var(--border-light);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+
+
+  .content-area {
+    flex: 1;
+    padding: 2rem;
+  }
+
+  .conversations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .conversation-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .conversation-card:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .conversation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+  }
+
+  .conversation-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .conversation-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.4;
+  }
+
+  .conversation-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-left: 1rem;
+  }
+
+  .conversation-preview {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .conversation-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .message-count {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--border-light);
+    border-radius: 0.375rem;
+    font-size: 0.625rem;
+    font-weight: 500;
+  }
+
+  .status-badge.recent {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+  }
+
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+  }
+
+  .empty-icon {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.3;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+  }
+
+  .empty-subtitle {
+    font-size: 1rem;
+    max-width: 28rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .empty-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .empty-action:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    color: white;
+    text-decoration: none;
+  }
+
+
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .skeleton-card {
+    height: 200px;
+    border-radius: var(--radius);
+  }
+
+
+  @media (max-width: 768px) {
+    .app-container {
+      padding: 0;
+    }
+
+    .main-interface {
+      max-width: 100%;
+    }
+
+    .header {
+      padding: 1.5rem 1rem 1rem;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .header-left {
+      text-align: center;
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      justify-content: center;
+    }
+
+    .header-actions {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .content-area {
+      padding: 1.5rem 1rem;
+    }
+
+    .conversations-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .conversation-card {
+      padding: 1.25rem;
+    }
+
+    .new-chat-btn span,
+    .logout-button span {
+      display: none;
+    }
+
+    .empty-state {
+      padding: 3rem 1rem;
+    }
+
+    .empty-title {
+      font-size: 1.25rem;
+    }
+
+    .empty-subtitle {
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .new-chat-btn,
+    .logout-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .new-chat-btn span,
+    .logout-button span {
+      display: inline;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .main-interface {
+      border-left: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+    }
+
+    .conversations-grid {
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app-container">
+  <div class="main-interface">
+
+    <header class="header">
+      <div class="header-left">
+        <h1 class="page-title">
+          <svg class="title-icon" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Histórico de Conversas
+        </h1>
+        <p class="page-subtitle">Suas conversas com o Assistente Tupiniquim</p>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'create_new_chat' %}" class="new-chat-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Nova Conversa</span>
+        </a>
+        <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+          {% csrf_token %}
+          <button type="submit" class="logout-button">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16,17 21,12 16,7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Sair</span>
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <main class="content-area">
+      {% if object_list %}
+        <div class="conversations-grid" id="conversationsGrid">
+          {% for conversation in object_list %}
+            <article class="conversation-card" onclick="openConversation('{{ conversation.id }}')">
+              <div class="conversation-header">
+                <div>
+                  <h3 class="conversation-title">
+                    {% if conversation.title %}
+                      {{ conversation.title|truncatechars:50 }}
+                    {% else %}
+                      Conversa {{ conversation.id }}
+                    {% endif %}
+                  </h3>
+                  <time class="conversation-date">
+                    {{ conversation.created_at|date:"d/m/Y H:i" }}
+                  </time>
+                </div>
+              </div>
+              
+              <div class="conversation-preview">
+                {% if conversation.chat_set.first %}
+                  {{ conversation.chat_set.first.message|truncatechars:120 }}
+                {% else %}
+                  Clique para ver a conversa completa
+                {% endif %}
+              </div>
+              
+              <div class="conversation-stats">
+                <span class="message-count">
+                  <svg class="btn-icon" viewBox="0 0 24 24">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  {{ conversation.chat_set.count }} mensagens
+                </span>
+                
+                {% if conversation.created_at|timesince < "1 day" %}
+                  <span class="status-badge recent">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+                      <circle cx="4" cy="4" r="4"/>
+                    </svg>
+                    Recente
+                  </span>
+                {% else %}
+                  <span class="status-badge">
+                    {{ conversation.created_at|timesince }} atrás
+                  </span>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h2 class="empty-title">Nenhuma conversa ainda</h2>
+          <p class="empty-subtitle">
+            Você ainda não iniciou nenhuma conversa com a PyIA. 
+            Que tal começar uma nova conversa agora mesmo?
+          </p>
+          <a href="{% url 'create_new_chat' %}" class="empty-action">
+            <svg class="btn-icon" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Iniciar primeira conversa
+          </a>
+        </div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  window.openConversation = function(conversationId) {
+    window.location.href = `/chatbot/${conversationId}/`;
+  };
+
+
+  const cards = document.querySelectorAll('.conversation-card');
+  cards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+
+  function updateRelativeDates() {
+    const timeElements = document.querySelectorAll('.conversation-date');
+    timeElements.forEach(element => {
+      const dateStr = element.textContent;
+      const date = new Date(dateStr.split('/').reverse().join('-'));
+      const now = new Date();
+      const diff = now - date;
+      
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      
+      if (minutes < 1) {
+        element.textContent = 'Agora mesmo';
+      } else if (minutes < 60) {
+        element.textContent = `${minutes}m atrás`;
+      } else if (hours < 24) {
+        element.textContent = `${hours}h atrás`;
+      } else if (days < 7) {
+        element.textContent = `${days}d atrás`;
+      }
+    });
+  }
+
+ 
+  updateRelativeDates();
+  setInterval(updateRelativeDates, 60000);
+
+  
+  cards.forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-4px)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+  });
+
+  window.showLoadingSkeleton = function() {
+    const grid = document.getElementById('conversationsGrid');
+    grid.innerHTML = '';
+    
+    for (let i = 0; i < 6; i++) {
+      const skeleton = document.createElement('div');
+      skeleton.className = 'skeleton skeleton-card';
+      grid.appendChild(skeleton);
+    }
+  };
+
+  if (window.innerWidth <= 768) {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    
+    window.addEventListener('resize', () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    });
+  }
+});
+</script>
+{% endblock %}

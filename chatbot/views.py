@@ -1,11 +1,14 @@
 import os
 from django.conf import settings
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.views.generic import ListView, CreateView
 from langchain_groq import ChatGroq
 from markdown import markdown
-from chatbot.models import Chat
+from chatbot.models import Chat, Conversation
 
 
 os.environ['GROQ_API_KEY'] = settings.GROQ_API_KEY
@@ -45,8 +48,9 @@ def ask_ai(context, message):
 
 
 @login_required
-def chatbot(request):
-    chats = Chat.objects.filter(user=request.user)
+def chatbot(request, pk):
+    conversation = Conversation.objects.get(pk=pk)
+    chats = Chat.objects.filter(conversation=conversation)
 
     if request.method == 'POST':
         context = get_chat_history(
@@ -59,7 +63,7 @@ def chatbot(request):
         )
 
         chat = Chat(
-            user=request.user,
+            conversation=conversation,
             message=message,
             response=response,
         )
@@ -68,3 +72,20 @@ def chatbot(request):
         return JsonResponse({'message': message, 'response': response})
 
     return render(request, 'chatbot.html', {'chats': chats})
+
+
+class ChatHistoryListView(LoginRequiredMixin, ListView):
+    model = Conversation
+    template_name = 'chat_history.html'
+
+    def get_queryset(self):
+        return Conversation.objects.filter(user=self.request.user)
+
+
+@login_required
+def create_new_chat(request):
+    new_conversation = Conversation.objects.create(
+        user=request.user,
+        title='Nova Conversa',
+    )
+    return redirect(reverse('chatbot', kwargs={'pk': new_conversation.pk}))

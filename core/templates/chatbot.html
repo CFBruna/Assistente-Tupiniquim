@@ -47,7 +47,7 @@
     position: relative;
   }
 
-  /* Header minimalista */
+
   .header {
     display: flex;
     align-items: center;
@@ -59,6 +59,33 @@
   }
 
   .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .back-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .back-button:hover {
+    background: var(--border-light);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .title-section {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -96,7 +123,7 @@
     color: var(--text-primary);
   }
 
-  /* Área de mensagens */
+
   .messages-area {
     flex: 1;
     overflow-y: auto;
@@ -177,7 +204,7 @@
     margin: 0 0.25rem;
   }
 
-  /* Estado de digitação */
+
   .typing-indicator {
     display: flex;
     align-items: center;
@@ -212,7 +239,7 @@
     30% { opacity: 1; }
   }
 
-  /* Input area */
+
   .input-area {
     padding: 1.5rem;
     border-top: 1px solid var(--border-light);
@@ -294,7 +321,7 @@
     fill: none;
   }
 
-  /* Estados vazios */
+
   .empty-state {
     display: flex;
     flex-direction: column;
@@ -325,7 +352,7 @@
     max-width: 24rem;
   }
 
-  /* Responsividade */
+
   @media (max-width: 640px) {
     .app-container {
       padding: 0;
@@ -337,6 +364,19 @@
 
     .header {
       padding: 1rem;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .header-left {
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .title-section {
+      text-align: center;
+      flex: 1;
     }
 
     .messages-area {
@@ -353,12 +393,13 @@
     }
 
     .welcome-text,
-    .logout-button span {
+    .logout-button span,
+    .back-button span {
       display: none;
     }
 
     .message-input {
-      font-size: 16px; /* Previne zoom no iOS */
+      font-size: 16px; 
     }
   }
 
@@ -374,11 +415,19 @@
 {% block content %}
 <div class="app-container">
   <div class="chat-interface">
-    <!-- Header -->
+
     <header class="header">
       <div class="header-left">
-        <h1 class="app-title">Assistente Tupiniquim</h1>
-        <p class="welcome-text">Olá, {{user.username}}</p>
+        <a href="{% url 'chat_history' %}" class="back-button">
+          <svg class="send-icon" viewBox="0 0 24 24">
+            <polyline points="15,18 9,12 15,6"></polyline>
+          </svg>
+          <span>Voltar</span>
+        </a>
+        <div class="title-section">
+          <h1 class="app-title">Assistente Tupiniquim</h1>
+          <p class="welcome-text">Olá, {{user.username}}</p>
+        </div>
       </div>
       <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
@@ -393,7 +442,7 @@
       </form>
     </header>
 
-    <!-- Área de mensagens -->
+
     <div class="messages-area" id="messagesArea">
       {% if chats %}
         <div class="message-group">
@@ -417,7 +466,7 @@
       {% endif %}
     </div>
 
-    <!-- Área de input -->
+
     <div class="input-area">
       <form class="input-container" id="messageForm">
         {% csrf_token %}
@@ -456,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
     messagesArea.appendChild(messageGroup);
   }
 
-  // Auto-resize do textarea
+
   function autoResize() {
     messageInput.style.height = 'auto';
     messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
@@ -464,15 +513,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   messageInput.addEventListener('input', autoResize);
 
-  // Scroll para o final
+
   function scrollToBottom() {
     messagesArea.scrollTop = messagesArea.scrollHeight;
   }
 
-  // Scroll inicial
+
   setTimeout(scrollToBottom, 100);
 
-  // Criar mensagem do usuário
+
   function createUserMessage(content) {
     const messageItem = document.createElement('div');
     messageItem.className = 'message-item user';
@@ -480,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return messageItem;
   }
 
-  // Criar mensagem do assistente
+
   function createAssistantMessage(content) {
     const messageItem = document.createElement('div');
     messageItem.className = 'message-item assistant';
@@ -488,7 +537,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return messageItem;
   }
 
-  // Criar indicador de digitação
   function createTypingIndicator() {
     const messageItem = document.createElement('div');
     messageItem.className = 'message-item assistant';
@@ -506,28 +554,28 @@ document.addEventListener('DOMContentLoaded', function() {
     return messageItem;
   }
 
-  // Submit do formulário
+
   messageForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
     const message = messageInput.value.trim();
     if (!message) return;
 
-    // Desabilitar controles
+
     messageInput.disabled = true;
     sendButton.disabled = true;
 
-    // Adicionar mensagem do usuário
+
     const userMessage = createUserMessage(message);
     messageGroup.appendChild(userMessage);
     
-    // Limpar input
+
     messageInput.value = '';
     messageInput.style.height = 'auto';
     
     scrollToBottom();
 
-    // Adicionar indicador de digitação
+
     const typingIndicator = createTypingIndicator();
     messageGroup.appendChild(typingIndicator);
     scrollToBottom();
@@ -550,34 +598,32 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       const data = await response.json();
-      
-      // Remover indicador de digitação
+
       const indicator = document.getElementById('typing-indicator');
       if (indicator) {
         indicator.remove();
       }
-      
-      // Adicionar resposta
+  
       const assistantMessage = createAssistantMessage(data.response);
       messageGroup.appendChild(assistantMessage);
       
     } catch (error) {
       console.error('Erro:', error);
       
-      // Remover indicador de digitação
+
       const indicator = document.getElementById('typing-indicator');
       if (indicator) {
         indicator.remove();
       }
       
-      // Mostrar erro
+
       const errorMessage = createAssistantMessage(
         'Desculpe, houve um problema ao processar sua mensagem. Tente novamente.'
       );
       messageGroup.appendChild(errorMessage);
       
     } finally {
-      // Reabilitar controles
+
       messageInput.disabled = false;
       sendButton.disabled = false;
       messageInput.focus();
@@ -585,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Enter para enviar (Shift+Enter para quebra de linha)
+
   messageInput.addEventListener('keydown', function(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -593,10 +639,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Focar no input
+
   messageInput.focus();
 
-  // Ajuste para móveis
+
   if (window.innerWidth <= 640) {
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
