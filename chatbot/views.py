@@ -89,3 +89,23 @@ def create_new_chat(request):
         title='Nova Conversa',
     )
     return redirect(reverse('chatbot', kwargs={'pk': new_conversation.pk}))
+
+
+@login_required
+def rename_conversation(request, pk):
+    if request.method == 'POST':
+        try:
+            conversation = Conversation.objects.get(pk=pk, user=request.user)
+            new_title = request.POST.get('title')
+
+            if new_title:
+                conversation.title = new_title
+                conversation.save()
+                return JsonResponse({'status': 'success', 'new_title': conversation.title})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'O título não pode ficar em branco.'}, status=400)
+        except Conversation.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Conversa não encontrada.'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Método de requisição inválido.'}, status=405)
+
+    
