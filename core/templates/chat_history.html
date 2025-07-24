@@ -426,7 +426,7 @@
     }
   }
   
-  /* CSS ADICIONADO */
+
   .conversation-actions {
     position: relative;
   }
@@ -478,14 +478,14 @@
     background: var(--border-light);
   }
   
-  /* === CSS ADICIONADO PARA O BOTÃO DE APAGAR === */
+
   .action-menu-item.danger {
     color: var(--danger-color);
   }
   .action-menu-item.danger:hover {
     background: rgba(239, 68, 68, 0.1);
   }
-  /* === FIM DO CSS ADICIONADO === */
+
 
 </style>
 {% endblock %}
@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   function updateRelativeDates() {
-    // A função original para atualizar datas está aqui e continua funcionando
+
   }
 
   updateRelativeDates();
@@ -652,22 +652,22 @@ document.addEventListener('DOMContentLoaded', function() {
   
   cards.forEach(card => {
     card.addEventListener('mouseenter', function() {
-      // Mouse enter logic
+
     });
     card.addEventListener('mouseleave', function() {
-      // Mouse leave logic
+
     });
   });
 
   window.showLoadingSkeleton = function() {
-    // Skeleton logic
+
   };
 
   if (window.innerWidth <= 768) {
-    // Mobile logic
+
   }
 
-  // --- LÓGICA FUNCIONAL ---
+
   let activeMenu = null;
 
   window.toggleActionMenu = function(event, conversationId) {
@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(response => response.json())
       .then(data => {
         if (data.status === 'success') {
-          // Atualiza o título na tela
+
           const titleElement = document.querySelector(`#title-section-${conversationId} .conversation-title`);
           if (titleElement) {
             titleElement.textContent = data.new_title;
@@ -714,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Ocorreu um erro de conexão. Verifique o console (F12).');
       })
       .finally(() => {
-        // Fecha o menu após a ação
+
         if (activeMenu) {
             activeMenu.classList.remove('show');
             activeMenu = null;
@@ -723,11 +723,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // === JAVASCRIPT ADICIONADO PARA A FUNÇÃO DE APAGAR ===
-  window.deleteConversation = function(event, conversationId) {
-    event.stopPropagation(); // Impede o clique de navegar para a conversa
 
-    // Pede confirmação antes de apagar
+  window.deleteConversation = function(event, conversationId) {
+    event.stopPropagation(); 
+
+
     if (confirm('Tem certeza que deseja apagar esta conversa? Esta ação não pode ser desfeita.')) {
         const csrfToken = document.querySelector('form [name=csrfmiddlewaretoken]').value;
         const formData = new FormData();
@@ -741,7 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Remove o card da conversa da tela com uma animação suave
+
                 const cardToRemove = document.getElementById(`card-${conversationId}`);
                 if (cardToRemove) {
                     cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -759,11 +759,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
   };
-  // === FIM DO JAVASCRIPT ADICIONADO ===
 
-  // Adiciona um listener para fechar o menu se clicar fora
+
+
   document.addEventListener('click', function(event) {
-    // A lógica aqui previne que o menu se feche ao ser clicado no próprio botão
+
     if (event.target.closest('.action-menu-btn')) {
         return;
     }
