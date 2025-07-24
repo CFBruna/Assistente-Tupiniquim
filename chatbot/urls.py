@@ -7,4 +7,5 @@ urlpatterns = [
     path('chatbot/new/', views.create_new_chat, name='create_new_chat'),
     path('chatbot/<int:pk>/', views.chatbot, name='chatbot'),
     path('conversation/<int:pk>/rename/', views.rename_conversation, name='rename_conversation'),
+    path('conversation/<int:pk>/delete/', views.delete_conversation, name='delete_conversation'),
 ]

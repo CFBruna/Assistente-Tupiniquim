@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView
 from langchain_groq import ChatGroq
 from markdown import markdown
 from chatbot.models import Chat, Conversation
@@ -108,4 +108,16 @@ def rename_conversation(request, pk):
             return JsonResponse({'status': 'error', 'message': 'Conversa não encontrada.'}, status=404)
     return JsonResponse({'status': 'error', 'message': 'Método de requisição inválido.'}, status=405)
 
-    
+
+@login_required
+def delete_conversation(request, pk):
+    if request.method == 'POST':
+        try:
+            conversation = Conversation.objects.get(pk=pk, user=request.user)
+            conversation.delete()
+            return JsonResponse({'status': 'success', 'message': 'Conversa removida com sucesso.'})
+
+        except Conversation.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Conversa não encontrada.'}, status=404)
+
+    return JsonResponse({'status': 'error', 'message': 'Método de requisição inválido.'}, status=405)

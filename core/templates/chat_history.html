@@ -14,6 +14,7 @@
     --border-light: #f3f4f6;
     --border-color: #e5e7eb;
     --success-color: #10b981;
+    --danger-color: #ef4444; /* ADICIONADO: Cor para o botão de apagar */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -471,11 +472,20 @@
     text-align: left;
     cursor: pointer;
     font-size: 0.875rem;
+    color: var(--text-primary); /* Cor padrão do texto */
   }
   .action-menu-item:hover {
     background: var(--border-light);
   }
-  /* FIM DO CSS ADICIONADO */
+  
+  /* === CSS ADICIONADO PARA O BOTÃO DE APAGAR === */
+  .action-menu-item.danger {
+    color: var(--danger-color);
+  }
+  .action-menu-item.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+  }
+  /* === FIM DO CSS ADICIONADO === */
 
 </style>
 {% endblock %}
@@ -520,7 +530,7 @@
       {% if object_list %}
         <div class="conversations-grid" id="conversationsGrid">
           {% for conversation in object_list %}
-            <article class="conversation-card" onclick="openConversation('{{ conversation.id }}')">
+            <article class="conversation-card" id="card-{{ conversation.id }}" onclick="openConversation('{{ conversation.id }}')">
               <div class="conversation-header">
                 <div id="title-section-{{ conversation.id }}">
                   <h3 class="conversation-title">
@@ -551,9 +561,13 @@
                       </svg>
                       Renomear
                     </button>
-                  </div>
+                    <button class="action-menu-item danger" onclick="deleteConversation(event, '{{ conversation.id }}')">
+                      <svg class="btn-icon" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      Apagar
+                    </button>
+                    </div>
                 </div>
-                </div>
+              </div>
               
               <div class="conversation-preview">
                 {% if conversation.chat_set.first %}
@@ -678,9 +692,6 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('title', newTitle.trim());
       formData.append('csrfmiddlewaretoken', csrfToken);
 
-      // ===============================================================
-      // CORREÇÃO APLICADA AQUI PARA USAR A SUA URL
-      // ===============================================================
       fetch(`/conversation/${conversationId}/rename/`, {
         method: 'POST',
         body: formData,
@@ -712,9 +723,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
+  // === JAVASCRIPT ADICIONADO PARA A FUNÇÃO DE APAGAR ===
+  window.deleteConversation = function(event, conversationId) {
+    event.stopPropagation(); // Impede o clique de navegar para a conversa
+
+    // Pede confirmação antes de apagar
+    if (confirm('Tem certeza que deseja apagar esta conversa? Esta ação não pode ser desfeita.')) {
+        const csrfToken = document.querySelector('form [name=csrfmiddlewaretoken]').value;
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch(`/conversation/${conversationId}/delete/`, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove o card da conversa da tela com uma animação suave
+                const cardToRemove = document.getElementById(`card-${conversationId}`);
+                if (cardToRemove) {
+                    cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    cardToRemove.style.transform = 'scale(0.95)';
+                    cardToRemove.style.opacity = '0';
+                    setTimeout(() => cardToRemove.remove(), 300);
+                }
+            } else {
+                alert("Erro: " + (data.message || "Não foi possível apagar a conversa."));
+            }
+        })
+        .catch(error => {
+            console.error('Erro de conexão:', error);
+            alert('Ocorreu um erro de conexão. Verifique o console (F12).');
+        });
+    }
+  };
+  // === FIM DO JAVASCRIPT ADICIONADO ===
+
   // Adiciona um listener para fechar o menu se clicar fora
   document.addEventListener('click', function(event) {
-    // A lógica aqui previne que o menu se feche ao ser clicado
+    // A lógica aqui previne que o menu se feche ao ser clicado no próprio botão
     if (event.target.closest('.action-menu-btn')) {
         return;
     }

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 
 class Conversation(models.Model):
-    user = models.ForeignKey(User,  on_delete=models.PROTECT, null=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     title = models.CharField(max_length=250)
     created_at = models.DateTimeField(auto_now_add=True)
 
